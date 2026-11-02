@@ -1,0 +1,21 @@
+<svg width="280" height="260" viewBox="0 0 280 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad0" x1="0" y1="0" x2="280" y2="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0A0A0A"/>
+      <stop offset="50%" stop-color="#171717"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+  </defs>
+  <rect width="280" height="260" rx="28" fill="url(#grad0)"/>
+  <rect x="2" y="2" width="276" height="256" rx="26" stroke="#2563EB" stroke-width="2" stroke-opacity="0.3"/>
+  
+  <circle cx="140" cy="105" r="65" fill="#2563EB" fill-opacity="0.15"/>
+  <circle cx="140" cy="105" r="40" fill="#2563EB" fill-opacity="0.25"/>
+  
+  <path d="M140 80L158 120L140 112L122 120Z" fill="#2563EB"/>
+  <path d="M105 135L140 118L175 135L140 130Z" fill="#FFFFFF"/>
+  
+  <rect x="20" y="180" width="240" height="60" rx="16" fill="#0A0A0A" fill-opacity="0.85" stroke="#2563EB" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="140" y="208" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="15" font-weight="700">Global Airport Hubs</text>
+  <text x="140" y="228" text-anchor="middle" fill="#9CA3AF" font-family="system-ui, sans-serif" font-size="12" font-weight="500">Priority Fast-Track</text>
+</svg>

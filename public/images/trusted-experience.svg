@@ -1,0 +1,7 @@
+<svg width="700" height="600" viewBox="0 0 700 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="700" height="600" rx="30" fill="#0A0A0A"/>
+  <circle cx="350" cy="300" r="200" stroke="#2563EB" stroke-width="2" stroke-dasharray="10 10" opacity="0.3"/>
+  <circle cx="350" cy="300" r="130" fill="#2563EB" fill-opacity="0.18"/>
+  <path d="M350 200L395 290L350 275L305 290Z" fill="#2563EB"/>
+  <path d="M250 315L350 280L450 315L350 305Z" fill="#FFFFFF"/>
+</svg>

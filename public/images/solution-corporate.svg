@@ -1,0 +1,8 @@
+<svg width="600" height="700" viewBox="0 0 600 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="700" rx="28" fill="#0A0A0A"/>
+  <circle cx="300" cy="300" r="180" fill="#2563EB" fill-opacity="0.2"/>
+  <path d="M300 200L345 285L300 270L255 285Z" fill="#2563EB"/>
+  <path d="M200 310L300 275L400 310L300 298Z" fill="#FFFFFF"/>
+  <text x="300" y="440" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="28" font-weight="800">Corporate & Incentives</text>
+  <text x="300" y="480" text-anchor="middle" fill="#9CA3AF" font-family="system-ui, sans-serif" font-size="16">Executive retreats & sales kickoffs</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg width="800" height="700" viewBox="0 0 800 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="700" rx="32" fill="#0A0A0A"/>
+  <circle cx="400" cy="320" r="240" stroke="#2563EB" stroke-width="2" stroke-dasharray="10 10" opacity="0.3"/>
+  <circle cx="400" cy="320" r="160" fill="#2563EB" fill-opacity="0.15"/>
+  <circle cx="400" cy="320" r="90" fill="#2563EB" fill-opacity="0.3"/>
+  <path d="M400 220L450 320L400 305L350 320Z" fill="#2563EB"/>
+  <path d="M290 350L400 310L510 350L400 338Z" fill="#FFFFFF"/>
+  <text x="400" y="470" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="28" font-weight="800">Global Air Charter & Commercial Group Desk</text>
+  <text x="400" y="510" text-anchor="middle" fill="#9CA3AF" font-family="system-ui, sans-serif" font-size="16">Connecting 450+ Airlines in 85 Countries</text>
+</svg>

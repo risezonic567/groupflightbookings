@@ -1,0 +1,10 @@
+<svg width="700" height="500" viewBox="0 0 700 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="700" height="500" rx="28" fill="#0A0A0A"/>
+  <circle cx="500" cy="200" r="160" fill="#2563EB" fill-opacity="0.15"/>
+  <circle cx="150" cy="150" r="60" fill="#F5F7FA" stroke="#2563EB" stroke-width="4"/>
+  <circle cx="150" cy="135" r="24" fill="#0A0A0A"/>
+  <path d="M110 195C110 170 125 165 150 165C175 165 190 170 190 195" fill="#2563EB"/>
+  <text x="240" y="140" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="24" font-weight="700">Marcus Vance</text>
+  <text x="240" y="165" fill="#9CA3AF" font-family="system-ui, sans-serif" font-size="14">Global Operations Director, Apex Tech Summits</text>
+  <text x="240" y="190" fill="#2563EB" font-family="system-ui, sans-serif" font-size="12" font-weight="700">140 PASSENGERS BOOKED</text>
+</svg>
