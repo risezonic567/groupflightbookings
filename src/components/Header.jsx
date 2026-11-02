@@ -110,38 +110,36 @@ export default function Header() {
   };
 
   return (
-    <header className="relative w-full z-50">
-      {/* 1. Thin Black Top Bar */}
-      <div className="bg-ink text-neutral-300 text-xs border-b border-neutral-800 hidden sm:block">
+    <>
+      {/* 1. Thin Black Top Bar - scrolls away naturally with the page */}
+      <div className="bg-[#0A0A0A] text-neutral-300 text-xs border-b border-neutral-800 hidden sm:block relative z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <a
               href={`tel:${siteConfig.phone.replace(/[^0-9+]/g, "")}`}
-              className="flex text-sm items-center gap-1.5 hover:text-white transition-colors"
+              className="flex text-sm items-center gap-1.5 text-neutral-300 hover:text-white transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-primary" />
               <span>{siteConfig.phone}</span>
             </a>
             <a
               href={`mailto:${siteConfig.email}`}
-              className="flex text-sm items-center gap-1.5 hover:text-white transition-colors"
+              className="flex text-sm items-center gap-1.5 text-neutral-300 hover:text-white transition-colors"
             >
               <Mail className="w-3.5 h-3.5 text-primary" />
               <span>{siteConfig.email}</span>
             </a>
           </div>
-          {/* <div className="flex items-center gap-4 text-neutral-400">
+          <div className="text-neutral-400 text-xs hidden md:block">
             <span>{siteConfig.hours}</span>
-            <span className="w-1 h-1 rounded-full bg-primary inline-block"></span>
-            <span>Contracted Fares for 10+ Passengers</span>
-          </div> */}
+          </div>
         </div>
       </div>
 
-      {/* 2. Main Navbar: Black, Sticky, ~80px */}
-      <nav
+      {/* 2. Main Sticky Navbar: Fixed solid dark background (#0A0A0A), zero flickering */}
+      <header
         ref={navRef}
-        className="sticky top-0 bg-ink border-b border-neutral-800 shadow-md"
+        className="sticky top-0 z-50 w-full bg-[#0A0A0A] border-b border-neutral-800 shadow-md"
         aria-label="Main Navigation"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -308,7 +306,7 @@ export default function Header() {
 
               <a
                 href="#quote"
-                className="inline-flex items-center justify-center bg-primary hover:bg-primary-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-ink"
+                className="inline-flex items-center justify-center bg-primary hover:bg-primary-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-ink"
               >
                 GET A QUOTE
               </a>
@@ -318,14 +316,14 @@ export default function Header() {
             <div className="flex lg:hidden items-center gap-3">
               <a
                 href="#quote"
-                className="text-xs font-bold uppercase tracking-wider bg-primary hover:bg-primary-dark text-white px-3.5 py-2 rounded-full"
+                className="text-xs font-bold uppercase tracking-wider bg-primary hover:bg-primary-dark text-white px-3.5 py-2 rounded-lg"
               >
                 Quote
               </a>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
                 aria-expanded={mobileMenuOpen}
                 aria-label="Toggle navigation menu"
               >
@@ -341,7 +339,7 @@ export default function Header() {
 
         {/* Mobile Dropdown Menu (Black Full-Width Accordion with smooth grid animation) */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-ink border-t border-neutral-800 px-4 pt-4 pb-8 space-y-3">
+          <div className="lg:hidden bg-[#0A0A0A] border-t border-neutral-800 px-4 pt-4 pb-8 space-y-3">
             <div className="flex flex-col space-y-1">
               {siteConfig.navigation.map((item) => {
                 const hasChildren = item.children && item.children.length > 0;
@@ -353,7 +351,7 @@ export default function Header() {
                       key={item.label}
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-3 rounded-xl text-base font-semibold text-white hover:bg-neutral-900 hover:text-primary transition-colors"
+                      className="px-3 py-3 rounded-lg text-base font-semibold text-white hover:bg-neutral-900 hover:text-primary transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -366,7 +364,7 @@ export default function Header() {
                       type="button"
                       onClick={() => toggleMobileAccordion(item.label)}
                       aria-expanded={isExpanded}
-                      className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-base font-semibold text-white hover:bg-neutral-900 hover:text-primary transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-base font-semibold text-white hover:bg-neutral-900 hover:text-primary transition-colors"
                     >
                       <span>{item.label}</span>
                       <ChevronDown
@@ -383,7 +381,7 @@ export default function Header() {
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <div className="pl-4 pr-2 py-2 space-y-1 bg-neutral-950 rounded-xl mb-2">
+                        <div className="pl-4 pr-2 py-2 space-y-1 bg-neutral-950 rounded-lg mb-2">
                           {item.children.map((child) => (
                             <Link
                               key={child.label}
@@ -413,7 +411,7 @@ export default function Header() {
             <div className="pt-4 border-t border-neutral-800 flex flex-col gap-3">
               <a
                 href={`tel:${siteConfig.phone.replace(/[^0-9+]/g, "")}`}
-                className="flex items-center justify-center gap-2 text-white font-semibold text-base py-2.5 bg-neutral-900 rounded-xl border border-neutral-800"
+                className="flex items-center justify-center gap-2 text-white font-semibold text-base py-2.5 bg-neutral-900 rounded-lg border border-neutral-800"
               >
                 <Phone className="w-4 h-4 text-primary" />
                 <span>{siteConfig.phone}</span>
@@ -422,7 +420,7 @@ export default function Header() {
               <a
                 href="#quote"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-full uppercase tracking-wider text-sm shadow-md text-center"
+                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-lg uppercase tracking-wider text-sm shadow-md text-center"
               >
                 <span>GET A QUOTE</span>
                 <ArrowRight className="w-4 h-4" />
@@ -430,7 +428,7 @@ export default function Header() {
             </div>
           </div>
         )}
-      </nav>
-    </header>
+      </header>
+    </>
   );
 }

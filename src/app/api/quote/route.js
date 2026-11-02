@@ -62,9 +62,9 @@ export async function POST(request) {
     }
 
     const travellersCount = parseInt(travellers, 10);
-    if (isNaN(travellersCount) || travellersCount < 10) {
+    if (isNaN(travellersCount) || travellersCount < 1) {
       return NextResponse.json(
-        { success: false, error: "Group airline bookings require a minimum of 10 passengers." },
+        { success: false, error: "Please specify at least 1 passenger for your group flight request." },
         { status: 400 }
       );
     }
