@@ -64,8 +64,8 @@ export const FORM_FIELDS = [
     name: "travellers",
     label: "Passengers",
     type: "number",
-    placeholder: "10",
-    min: 10,
+    placeholder: "1",
+    min: 1,
     required: true,
     step: 1
   },
@@ -123,7 +123,7 @@ export const FORM_FIELDS = [
 export default function QuoteForm({
   variant = "card", // "bar" for hero horizontal search bar, "card" for inner pages
   title = "Get a Guaranteed Group Flight Quote",
-  subtitle = "Direct airline group desk rates for 10+ passengers. Response within 60 minutes.",
+  subtitle = "Exclusive group flight solutions for your next journey.",
   airlineContext = "",
   className = ""
 }) {
@@ -134,7 +134,7 @@ export default function QuoteForm({
     destination: "",
     departureDate: "",
     returnDate: "",
-    travellers: 10,
+    travellers: 1,
     flightClass: "Economy",
     directPreferred: false,
     fullName: "",
@@ -198,8 +198,8 @@ export default function QuoteForm({
   // Passenger Count +/- Steppers
   const handlePassengerChange = (delta) => {
     setFormData((prev) => {
-      const current = parseInt(prev.travellers, 10) || 10;
-      const nextVal = Math.max(10, current + delta);
+      const current = parseInt(prev.travellers, 10) || 1;
+      const nextVal = Math.max(1, current + delta);
       return { ...prev, travellers: nextVal };
     });
     if (errors.travellers) {
@@ -230,8 +230,8 @@ export default function QuoteForm({
     }
 
     const travellersCount = parseInt(formData.travellers, 10);
-    if (!formData.travellers || isNaN(travellersCount) || travellersCount < 10) {
-      newErrors.travellers = "Min. 10 passengers required.";
+    if (!formData.travellers || isNaN(travellersCount) || travellersCount < 1) {
+      newErrors.travellers = "Please enter at least 1 passenger.";
     }
 
     return newErrors;
@@ -904,13 +904,13 @@ export default function QuoteForm({
           {/* Passengers */}
           <div className="col-span-12 sm:col-span-6">
             <label htmlFor="card-travellers" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Passengers (Min 10) <span className="text-primary">*</span>
+              Passengers <span className="text-primary">*</span>
             </label>
             <input
               type="number"
               id="card-travellers"
               name="travellers"
-              min="10"
+              min="1"
               value={formData.travellers}
               onChange={handleChange}
               required
