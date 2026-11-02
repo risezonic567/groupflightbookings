@@ -1,0 +1,45 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- TODO: Replace with official team / aircraft operations photography when available -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="60%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+    <linearGradient id="blueAccent" x1="0" y1="0" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <radialGradient id="hubGlow" cx="400" cy="300" r="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="800" height="600" rx="24" fill="url(#bgGrad)"/>
+  <circle cx="400" cy="260" r="280" fill="url(#hubGlow)"/>
+
+  <!-- Radar / Flight Vector Lines -->
+  <circle cx="400" cy="260" r="200" stroke="#2563EB" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="6 6"/>
+  <circle cx="400" cy="260" r="130" stroke="#2563EB" stroke-width="1.5" stroke-opacity="0.35"/>
+  <path d="M120 420C240 220 560 160 700 240" stroke="#2563EB" stroke-width="2.5" stroke-opacity="0.5" stroke-dasharray="8 8"/>
+  <path d="M100 280C260 260 520 380 680 320" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.2"/>
+
+  <!-- Flight Path Nodes -->
+  <circle cx="280" cy="245" r="5" fill="#2563EB"/>
+  <circle cx="520" cy="180" r="5" fill="#2563EB"/>
+  <circle cx="640" cy="220" r="6" fill="#FFFFFF"/>
+
+  <!-- Center Aircraft Icon Silhouette -->
+  <g transform="translate(400, 260) scale(1.4) translate(-24, -24)">
+    <path d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z" fill="#FFFFFF"/>
+    <circle cx="11.5" cy="11.5" r="16" stroke="#2563EB" stroke-width="2" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- Aviation Air Desk Tag -->
+  <rect x="230" y="440" width="340" height="52" rx="14" fill="#0A0A0A" fill-opacity="0.8" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="400" y="472" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="1.5">GLOBAL AIR DESK OPERATIONS</text>
+  <text x="400" y="525" text-anchor="middle" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="12">Direct GDS Carrier Contracting &amp; Disruption Recovery</text>
+</svg>
+

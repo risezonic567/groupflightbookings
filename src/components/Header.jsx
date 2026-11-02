@@ -21,6 +21,17 @@ export default function Header() {
   const timeoutRef = useRef(null);
   const navRef = useRef(null);
   const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Detect scroll to transition navbar to white with shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -138,10 +149,14 @@ export default function Header() {
         </div>
       </div>
 
-      {/* 2. Main Navbar: Black, Sticky, ~80px */}
+      {/* 2. Main Navbar: Sticky, transitions to white with subtle shadow on scroll */}
       <nav
         ref={navRef}
-        className="sticky top-0 bg-ink border-b border-neutral-800 shadow-md"
+        className={`sticky top-0 transition-all duration-300 z-50 ${
+          isScrolled
+            ? "bg-white text-ink border-b border-neutral-200/80 shadow-md"
+            : "bg-ink text-white border-b border-neutral-800"
+        }`}
         aria-label="Main Navigation"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,10 +170,18 @@ export default function Header() {
                 <Plane className="w-6 h-6 text-white rotate-45" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white leading-tight">
+                <span
+                  className={`font-extrabold text-lg sm:text-xl tracking-tight leading-tight transition-colors ${
+                    isScrolled ? "text-ink" : "text-white"
+                  }`}
+                >
                   Group Flight
                 </span>
-                <span className="text-[10px] tracking-[0.25em] uppercase text-neutral-400 font-bold leading-none mt-0.5">
+                <span
+                  className={`text-[10px] tracking-[0.25em] uppercase font-bold leading-none mt-0.5 transition-colors ${
+                    isScrolled ? "text-neutral-500" : "text-neutral-400"
+                  }`}
+                >
                   BOOKINGS
                 </span>
               </div>
@@ -176,7 +199,11 @@ export default function Header() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="px-3 py-2 text-sm font-semibold text-white hover:text-primary transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className={`px-3 py-2 text-sm font-semibold transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                        isScrolled
+                          ? "text-neutral-800 hover:text-primary"
+                          : "text-white hover:text-primary"
+                      }`}
                     >
                       {item.label}
                     </Link>
@@ -198,13 +225,23 @@ export default function Header() {
                       aria-expanded={isOpen}
                       aria-haspopup="true"
                       className={`relative inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer ${
-                        isOpen ? "text-primary bg-neutral-900" : "text-white hover:text-primary"
+                        isOpen
+                          ? isScrolled
+                            ? "text-primary bg-blue-50"
+                            : "text-primary bg-neutral-900"
+                          : isScrolled
+                          ? "text-neutral-800 hover:text-primary"
+                          : "text-white hover:text-primary"
                       }`}
                     >
                       <span>{item.label}</span>
                       <ChevronDown
                         className={`w-4 h-4 transition-transform duration-200 motion-reduce:transition-none ${
-                          isOpen ? "rotate-180 text-primary" : "text-neutral-400"
+                          isOpen
+                            ? "rotate-180 text-primary"
+                            : isScrolled
+                            ? "text-neutral-500"
+                            : "text-neutral-400"
                         }`}
                       />
                       {/* Growing blue underline from center */}
@@ -295,11 +332,13 @@ export default function Header() {
               })}
             </div>
 
-            {/* Right: Large Phone Number + Blue "GET A QUOTE" Button */}
+            {/* Right: Large Phone Number + Solid Blue "GET A QUOTE" Button */}
             <div className="hidden lg:flex items-center gap-5">
               <a
                 href={`tel:${siteConfig.phone.replace(/[^0-9+]/g, "")}`}
-                className="flex items-center gap-2 text-white font-semibold text-base hover:text-primary transition-colors"
+                className={`flex items-center gap-2 font-semibold text-base transition-colors ${
+                  isScrolled ? "text-neutral-800 hover:text-primary" : "text-white hover:text-primary"
+                }`}
                 aria-label={`Call ${siteConfig.phone}`}
               >
                 <Phone className="w-4 h-4 text-primary" />
@@ -308,31 +347,35 @@ export default function Header() {
 
               <a
                 href="#quote"
-                className="inline-flex items-center justify-center bg-primary hover:bg-primary-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-ink"
+                className="inline-flex items-center justify-center bg-primary hover:bg-primary-dark text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 GET A QUOTE
               </a>
             </div>
 
-            {/* Mobile: Hamburger Button */}
+            {/* Mobile: Action & Hamburger Button */}
             <div className="flex lg:hidden items-center gap-3">
               <a
                 href="#quote"
-                className="text-xs font-bold uppercase tracking-wider bg-primary hover:bg-primary-dark text-white px-3.5 py-2 rounded-full"
+                className="text-xs font-bold uppercase tracking-wider bg-primary hover:bg-primary-dark text-white px-3.5 py-2 rounded-lg transition-colors"
               >
                 Quote
               </a>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                  isScrolled
+                    ? "text-neutral-800 hover:bg-neutral-100"
+                    : "text-neutral-300 hover:text-white hover:bg-neutral-900"
+                }`}
                 aria-expanded={mobileMenuOpen}
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-white" />
+                  <X className="w-6 h-6" />
                 ) : (
-                  <Menu className="w-6 h-6 text-white" />
+                  <Menu className="w-6 h-6" />
                 )}
               </button>
             </div>

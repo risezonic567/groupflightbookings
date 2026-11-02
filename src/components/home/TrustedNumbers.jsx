@@ -1,5 +1,5 @@
-import { Building2, Landmark, GraduationCap, Calendar, HeartHandshake, Compass, Users2 } from "lucide-react";
-import { trustedNumbers, clientSectors } from "@/data/stats";
+import { Building2, Landmark, GraduationCap, Calendar, HeartHandshake, Compass, Users } from "lucide-react";
+import { clientSectors } from "@/data/stats";
 
 export default function TrustedNumbers() {
   const sectorIcons = [
@@ -12,72 +12,51 @@ export default function TrustedNumbers() {
   ];
 
   return (
-    <section className="py-20 bg-soft text-ink border-b border-neutral-200">
+    <section className="py-20 lg:py-24 bg-[#F3F7FF] text-ink border-b border-neutral-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-neutral-300 text-xs font-semibold text-primary mb-3">
-            <Users2 className="w-3.5 h-3.5" />
-            <span>Scale & Track Record</span>
+        <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-100/80 border border-blue-200 text-xs font-bold uppercase tracking-wider text-primary mb-3">
+            <Users className="w-3.5 h-3.5" />
+            <span>Dedicated Group Sectors</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
-            Trusted in Numbers Across Global Aviation
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ink">
+            Who We Proudly Serve
           </h2>
-          <p className="mt-3 text-base sm:text-lg text-neutral-600">
-            From Fortune 500 summits to humanitarian emergency deployments, our air desk delivers seamless logistics for groups of any scale.
+          <p className="mt-4 text-base sm:text-lg text-neutral-600 leading-relaxed">
+            From Fortune 500 corporate summits to university delegations and humanitarian relief missions, our air desk customizes contracts for every travel mandate.
           </p>
         </div>
 
-        {/* 4 Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
-          {trustedNumbers.map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-white rounded-2xl p-6 sm:p-8 border border-neutral-200 shadow-sm text-center flex flex-col justify-center items-center"
-            >
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-primary tracking-tight mb-2">
-                {stat.value}
-              </span>
-              <span className="text-xs sm:text-sm font-bold text-ink">
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* 6 Neat Cards in 2 Rows x 3 Columns (Global Card System) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {clientSectors.map((sector, idx) => {
+            const Icon = sectorIcons[idx % sectorIcons.length];
 
-        {/* Who We Serve Section */}
-        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-neutral-200 shadow-sm">
-          <h3 className="text-xl sm:text-2xl font-bold text-ink text-center mb-8">
-            Who We Proudly Serve
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clientSectors.map((sector, idx) => {
-              const Icon = sectorIcons[idx % sectorIcons.length];
-
-              return (
-                <div
-                  key={sector.title}
-                  className="flex items-start gap-4 p-4 rounded-xl hover:bg-soft transition-colors border border-transparent hover:border-neutral-200"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-soft border border-neutral-200 flex items-center justify-center text-primary shrink-0">
-                    <Icon className="w-5 h-5" />
+            return (
+              <div
+                key={sector.title}
+                className="rounded-2xl bg-white border border-neutral-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 transition-all duration-300 p-6 sm:p-7 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Larger Icon in Blue-Tinted Square */}
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-primary mb-5 shadow-xs">
+                    <Icon className="w-7 h-7" />
                   </div>
-                  <div>
-                    <h4 className="text-base font-bold text-ink mb-1">
-                      {sector.title}
-                    </h4>
-                    <p className="text-xs text-neutral-600 leading-relaxed">
-                      {sector.desc}
-                    </p>
-                  </div>
+
+                  <h3 className="text-xl font-bold text-ink mb-2.5">
+                    {sector.title}
+                  </h3>
+
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    {sector.desc}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
-

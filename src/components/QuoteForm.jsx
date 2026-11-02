@@ -15,7 +15,9 @@ import {
   Minus,
   X,
   Plane,
-  Briefcase
+  Briefcase,
+  ChevronDown,
+  Check
 } from "lucide-react";
 import AirportInput from "@/components/AirportInput";
 import { submitQuote } from "@/lib/api";
@@ -317,24 +319,35 @@ export default function QuoteForm({
   if (variant === "bar") {
     return (
       <div id="quote" className={`w-full max-w-7xl mx-auto ${className}`}>
-        <div className="bg-black/70 backdrop-blur-md  text-white rounded-[2rem] p-6 sm:p-8 lg:p-10 shadow-2xl border border-neutral-800">
-          {/* Header Title */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-neutral-800 gap-2">
+        <div className="relative bg-[#0F172A]/95 backdrop-blur-xl text-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 lg:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border border-white/10 ring-1 ring-white/5">
+          {/* Top Subtle Royal Blue Accent Glow Line */}
+          <div
+            className="absolute top-0 left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-primary/80 to-transparent"
+            aria-hidden="true"
+          />
+
+          {/* Header Title Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 mb-5 border-b border-white/10 gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
-                <Plane className="w-5 h-5 rotate-45" />
+              <div className="w-11 h-11 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shadow-xs shrink-0">
+                <Plane className="w-5 h-5 rotate-45 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                  Search Group Flight
-                </h3>
-                <p className="text-xs text-neutral-400">
-                  Negotiated offline airline rates for 10+ passengers
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    Search Group Flights
+                  </h3>
+                  <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold uppercase tracking-wider text-primary">
+                    10+ Travellers
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Contracted offline airline desk tariffs with guaranteed locked fares
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-neutral-300 self-start sm:self-auto shadow-2xs">
               <ShieldCheck className="w-4 h-4 text-primary" />
               <span>Direct Group Tariff Guarantee</span>
             </div>
@@ -342,13 +355,13 @@ export default function QuoteForm({
 
           {/* Step 1 Bar Form */}
           <form onSubmit={handleNextStep} noValidate className="space-y-4">
-            {/* Grid of Fields: ONE ROW on desktop (xl), wrapping on tablet, stacked on mobile */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-12 gap-3 xl:gap-2.5 items-end">
+            {/* Grid of Fields: Horizontal 7-column layout on Desktop, 4-col on Laptop/Tablet, 2-col on Small Tablet, 1-col on Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3.5 items-end">
               {/* 1. Origin */}
-              <div className="xl:col-span-2">
+              <div className="relative">
                 <label
                   htmlFor="hero-origin"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
                   Origin <span className="text-primary">*</span>
                 </label>
@@ -359,33 +372,44 @@ export default function QuoteForm({
                   onChange={handleChange}
                   placeholder="City or airport"
                   required
-                  className="h-12 rounded-full !border-neutral-700 !bg-white text-ink text-sm shadow-sm"
+                  className="h-12 rounded-xl !border-neutral-300 !bg-white text-slate-900 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary"
                 />
-                {errors.origin && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-full inline-block">
-                    {errors.origin}
-                  </p>
-                )}
-              </div>
-
-              {/* Swap Button (between origin & destination) */}
-              <div className="hidden xl:flex xl:col-span-auto items-center justify-center pb-2">
+                {/* Desktop Floating Swap Button between Origin & Destination */}
                 <button
                   type="button"
                   onClick={handleSwapAirports}
                   title="Swap Origin and Destination"
                   aria-label="Swap airports"
-                  className="w-8 h-8 rounded-full bg-neutral-900 hover:bg-primary border border-neutral-700 text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="hidden xl:flex absolute -right-3.5 top-[39px] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-slate-900 hover:bg-primary border border-white/20 text-neutral-300 hover:text-white items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
+                </button>
+                {errors.origin && (
+                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
+                    {errors.origin}
+                  </p>
+                )}
+              </div>
+
+              {/* Mobile/Tablet Inline Swap Button (visible only when stacked/2-col) */}
+              <div className="flex xl:hidden justify-center -my-1 sm:col-span-2 lg:col-span-4 z-10">
+                <button
+                  type="button"
+                  onClick={handleSwapAirports}
+                  title="Swap Origin and Destination"
+                  aria-label="Swap airports"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 hover:bg-primary border border-white/20 text-xs font-semibold text-neutral-300 hover:text-white shadow transition-all duration-200 cursor-pointer active:scale-95"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5" />
+                  <span>Swap Airports</span>
                 </button>
               </div>
 
               {/* 2. Destination */}
-              <div className="xl:col-span-2">
+              <div>
                 <label
                   htmlFor="hero-destination"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
                   Destination <span className="text-primary">*</span>
                 </label>
@@ -396,25 +420,25 @@ export default function QuoteForm({
                   onChange={handleChange}
                   placeholder="City or airport"
                   required
-                  className="h-12 rounded-full !border-neutral-700 !bg-white text-ink text-sm shadow-sm"
+                  className="h-12 rounded-xl !border-neutral-300 !bg-white text-slate-900 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary"
                 />
                 {errors.destination && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-full inline-block">
+                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
                     {errors.destination}
                   </p>
                 )}
               </div>
 
               {/* 3. Departure Date */}
-              <div className="xl:col-span-2">
+              <div>
                 <label
                   htmlFor="hero-departureDate"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
                   Departure <span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
                     <Calendar className="w-4 h-4 text-primary" />
                   </div>
                   <input
@@ -424,26 +448,26 @@ export default function QuoteForm({
                     value={formData.departureDate}
                     onChange={handleChange}
                     required
-                    className="w-full h-12 pl-10 pr-3 text-sm bg-white border border-neutral-700 rounded-full text-ink focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+                    className="w-full h-12 pl-10 pr-3 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer"
                   />
                 </div>
                 {errors.departureDate && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-full inline-block">
+                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
                     {errors.departureDate}
                   </p>
                 )}
               </div>
 
               {/* 4. Return Date */}
-              <div className="xl:col-span-2">
+              <div>
                 <label
                   htmlFor="hero-returnDate"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
                   Return <span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
                     <Calendar className="w-4 h-4 text-primary" />
                   </div>
                   <input
@@ -454,114 +478,136 @@ export default function QuoteForm({
                     value={formData.returnDate}
                     onChange={handleChange}
                     required
-                    className="w-full h-12 pl-10 pr-3 text-sm bg-white border border-neutral-700 rounded-full text-ink focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+                    className="w-full h-12 pl-10 pr-3 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer"
                   />
                 </div>
                 {errors.returnDate && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-full inline-block">
+                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
                     {errors.returnDate}
                   </p>
                 )}
               </div>
 
-              {/* 5. Passengers with +/- steppers */}
-              <div className="xl:col-span-1">
+              {/* 5. Passengers with Attractive +/- Steppers */}
+              <div>
                 <label
                   htmlFor="hero-travellers"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
-                  Pax <span className="text-primary">*</span>
+                  Passengers <span className="text-primary">*</span>
                 </label>
-                <div className="relative flex items-center bg-white rounded-full border border-neutral-700 h-12 px-2 shadow-sm text-ink">
+                <div className="relative flex items-center justify-between bg-white rounded-xl border border-neutral-300 h-12 px-1.5 shadow-sm text-slate-900">
                   <button
                     type="button"
                     onClick={() => handlePassengerChange(-1)}
-                    className="w-7 h-7 rounded-full bg-soft hover:bg-neutral-200 text-ink flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                    disabled={parseInt(formData.travellers, 10) <= 10}
+                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-700 text-slate-700 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer active:scale-95"
                     aria-label="Decrease passenger count"
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <input
-                    type="number"
-                    id="hero-travellers"
-                    name="travellers"
-                    min="10"
-                    value={formData.travellers}
-                    onChange={handleChange}
-                    className="w-full text-center font-bold text-sm bg-transparent focus:outline-none text-ink px-1"
-                  />
+                  <div className="flex flex-col items-center justify-center flex-1 px-1">
+                    <input
+                      type="number"
+                      id="hero-travellers"
+                      name="travellers"
+                      min="10"
+                      value={formData.travellers}
+                      onChange={handleChange}
+                      className="w-full text-center font-black text-sm text-slate-900 bg-transparent focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      aria-label="Passenger count"
+                    />
+                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-bold leading-none">Guests</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => handlePassengerChange(1)}
-                    className="w-7 h-7 rounded-full bg-soft hover:bg-neutral-200 text-ink flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer"
+                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-700 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer active:scale-95"
                     aria-label="Increase passenger count"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 {errors.travellers && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-full inline-block">
+                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
                     {errors.travellers}
                   </p>
                 )}
               </div>
 
-              {/* 6. Class select */}
-              <div className="xl:col-span-1">
+              {/* 6. Travel Class Dropdown */}
+              <div>
                 <label
                   htmlFor="hero-flightClass"
-                  className="block text-xs font-semibold text-neutral-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                 >
-                  Class
+                  Cabin Class
                 </label>
-                <select
-                  id="hero-flightClass"
-                  name="flightClass"
-                  value={formData.flightClass}
-                  onChange={handleChange}
-                  className="w-full h-12 px-3 text-sm bg-white border border-neutral-700 rounded-full text-ink focus:outline-none focus:ring-2 focus:ring-primary shadow-sm cursor-pointer"
-                >
-                  <option value="Economy">Economy</option>
-                  <option value="Premium Economy">Prem. Econ</option>
-                  <option value="Business">Business</option>
-                  <option value="First">First</option>
-                </select>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
+                    <Briefcase className="w-4 h-4 text-primary" />
+                  </div>
+                  <select
+                    id="hero-flightClass"
+                    name="flightClass"
+                    value={formData.flightClass}
+                    onChange={handleChange}
+                    className="w-full h-12 pl-10 pr-8 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer appearance-none"
+                  >
+                    <option value="Economy">Economy</option>
+                    <option value="Premium Economy">Prem. Economy</option>
+                    <option value="Business">Business Class</option>
+                    <option value="First">First Class</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-neutral-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
 
-              {/* 7. Direct Flights checkbox & Next button */}
-              <div className="xl:col-span-1 flex flex-col justify-end">
+              {/* 7. Next Button */}
+              <div className="sm:col-span-2 lg:col-span-4 xl:col-span-1 flex flex-col justify-end">
                 <button
                   type="submit"
-                  className="w-full h-12 rounded-full bg-white hover:bg-primary text-ink hover:text-white font-extrabold text-sm uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-ink"
+                  className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-black text-sm uppercase tracking-wider shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900 group"
                 >
                   <span>Next</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </div>
             </div>
 
-            {/* Bottom Row: Direct Flights Checkbox + Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-3 gap-3 text-xs text-neutral-400">
-              <label className="flex items-center gap-2 cursor-pointer select-none group">
-                <input
-                  type="checkbox"
-                  name="directPreferred"
-                  checked={formData.directPreferred}
-                  onChange={handleChange}
-                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
-                />
-                <span className="text-neutral-300 group-hover:text-white transition-colors">
-                  Direct flights only (Yes)
+            {/* Bottom Row: Direct Flights Checkbox + Trust Highlights */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 mt-2 border-t border-white/10 gap-3 text-xs text-neutral-300">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none group py-1">
+                <div className="relative flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    name="directPreferred"
+                    checked={formData.directPreferred}
+                    onChange={handleChange}
+                    className="peer sr-only"
+                  />
+                  <div className="w-4 h-4 rounded border border-white/30 bg-white/10 peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity stroke-[3]" />
+                  </div>
+                </div>
+                <span className="text-neutral-300 group-hover:text-white transition-colors font-medium">
+                  Direct flights preferred (non-stop only)
                 </span>
               </label>
 
-              <div className="flex items-center gap-4 text-neutral-400">
-                <span className="flex items-center gap-1 text-white">
+              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-neutral-300">
+                <span className="flex items-center gap-1.5 text-white">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Minimum 10 travellers
                 </span>
-                <span>•</span>
-                <span className="flex items-center gap-1 text-white">
+                <span className="hidden sm:inline text-neutral-600">•</span>
+                <span className="flex items-center gap-1.5 text-white">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Free name changes
+                </span>
+                <span className="hidden sm:inline text-neutral-600">•</span>
+                <span className="flex items-center gap-1.5 text-white">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> 24/7 Air Desk Support
                 </span>
               </div>
             </div>
@@ -828,7 +874,7 @@ export default function QuoteForm({
               value={formData.departureDate}
               onChange={handleChange}
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.departureDate ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -848,7 +894,7 @@ export default function QuoteForm({
               value={formData.returnDate}
               onChange={handleChange}
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.returnDate ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -868,7 +914,7 @@ export default function QuoteForm({
               value={formData.travellers}
               onChange={handleChange}
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.travellers ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -885,7 +931,7 @@ export default function QuoteForm({
               name="flightClass"
               value={formData.flightClass}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 text-sm bg-white border border-neutral-300 rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-12 px-4 text-sm bg-white border border-neutral-300 rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
               <option value="Economy">Economy</option>
               <option value="Premium Economy">Premium Economy</option>
@@ -907,7 +953,7 @@ export default function QuoteForm({
               onChange={handleChange}
               placeholder="e.g. Sarah Jenkins"
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.fullName ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -927,7 +973,7 @@ export default function QuoteForm({
               onChange={handleChange}
               placeholder="sarah@company.com"
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.email ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -947,7 +993,7 @@ export default function QuoteForm({
               onChange={handleChange}
               placeholder="+1 (555) 234-5678"
               required
-              className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
                 errors.phone ? "border-primary ring-1 ring-primary" : "border-neutral-300"
               }`}
             />
@@ -955,14 +1001,14 @@ export default function QuoteForm({
           </div>
 
           {/* Direct Flights Checkbox */}
-          <div className="col-span-12 sm:col-span-6 pt-6">
+          <div className="col-span-12 sm:col-span-6 flex items-center pt-5">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 name="directPreferred"
                 checked={formData.directPreferred}
                 onChange={handleChange}
-                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary cursor-pointer"
               />
               <span className="text-xs text-neutral-700 font-medium">
                 Direct flights preferred (non-stop)
@@ -976,7 +1022,7 @@ export default function QuoteForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark disabled:bg-neutral-400 text-white font-bold text-base py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+            className="w-full h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark disabled:bg-neutral-400 text-white font-bold text-sm uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all cursor-pointer"
           >
             {isSubmitting ? (
               <>
