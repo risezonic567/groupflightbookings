@@ -263,12 +263,10 @@ export default function Header() {
                       role="menu"
                       aria-label={`${item.label} submenu`}
                     >
-                      {/* Invisible hover bridge to eliminate any gap between trigger and panel */}
+                   
                       <div className="absolute -top-3 left-0 right-0 h-4 pointer-events-auto" aria-hidden="true" />
 
-                      {/* White rounded card with border and top arrow notch */}
                       <div className="relative bg-white text-ink rounded-2xl shadow-2xl border border-neutral-200 p-2.5">
-                        {/* Small top notch arrow aligned under trigger */}
                         <div
                           className={`absolute -top-1.5 w-3 h-3 bg-white border-t border-l border-neutral-200 rotate-45 ${
                             isRightAligned ? "right-7" : "left-7"
@@ -276,7 +274,6 @@ export default function Header() {
                           aria-hidden="true"
                         />
 
-                        {/* Dropdown Items with Staggered Entrance and Smooth Hover */}
                         <div className="flex flex-col gap-1 max-h-[460px] overflow-y-auto overflow-x-hidden">
                           {item.children.map((child, childIdx) => (
                             <div

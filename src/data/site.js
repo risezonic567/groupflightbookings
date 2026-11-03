@@ -15,46 +15,46 @@ export const siteConfig = {
       label: "Group Types",
       href: "/contact?type=group",
       children: [
-        { label: "Corporate Groups", href: "/contact?type=corporate", desc: "Executive summits, retreats & global team travel" },
-        { label: "MICE & Events", href: "/contact?type=mice", desc: "Conferences, exhibitions & large convention air" },
-        { label: "Educational Groups", href: "/contact?type=education", desc: "Universities, student tours & study abroad" },
-        { label: "Sports Teams", href: "/contact?type=sports", desc: "Athletes, coaches, support crew & baggage pooling" },
-        { label: "NGO & Humanitarian", href: "/contact?type=ngo", desc: "Relief missions, volunteer squads & NGO tariffs" },
-        { label: "Pilgrimage & Faith Groups", href: "/contact?type=pilgrimage", desc: "Faith-based journeys, heritage tours & choir delegations" }
+        { label: "Corporate Groups", href: "/contact?type=corporate",  },
+        { label: "MICE & Events", href: "/contact?type=mice",  },
+        { label: "Educational Groups", href: "/contact?type=education", },
+        { label: "Sports Teams", href: "/contact?type=sports",  },
+        { label: "NGO & Humanitarian", href: "/contact?type=ngo",  },
+        { label: "Pilgrimage & Faith Groups", href: "/contact?type=pilgrimage",  }
       ]
     },
     {
       label: "Destinations",
       href: "/airlines",
       children: [
-        { label: "London Heathrow (LHR)", href: "/airlines/british-airways", desc: "Premier European & transatlantic gateway" },
-        { label: "Dubai International (DXB)", href: "/airlines/emirates", desc: "Global transit hub connecting 6 continents" },
-        { label: "New York (JFK / EWR)", href: "/airlines/delta-air-lines", desc: "North American financial & trade gateway" },
-        { label: "Paris (CDG)", href: "/airlines/air-france", desc: "Continental European art, culture & enterprise hub" },
-        { label: "Singapore Changi (SIN)", href: "/airlines/singapore-airlines", desc: "Southeast Asian & Australasian connection capital" },
-        { label: "Tokyo (HND / NRT)", href: "/airlines/united-airlines", desc: "East Asia economic powerhouse and summit destination" }
+        { label: "London Heathrow (LHR)", href: "/airlines/british-airways", },
+        { label: "Dubai International (DXB)", href: "/airlines/emirates", },
+        { label: "New York (JFK / EWR)", href: "/airlines/delta-air-lines",},
+        { label: "Paris (CDG)", href: "/airlines/air-france", },
+        { label: "Singapore Changi (SIN)", href: "/airlines/singapore-airlines", },
+        { label: "Tokyo (HND / NRT)", href: "/airlines/united-airlines",  }
       ]
     },
     {
       label: "Airlines",
       href: "/airlines",
       children: [
-        { label: "British Airways", href: "/airlines/british-airways", desc: "OneWorld flagship transatlantic group desk" },
-        { label: "Emirates", href: "/airlines/emirates", desc: "A380 luxury widebody long-haul allocations" },
-        { label: "Lufthansa", href: "/airlines/lufthansa", desc: "Star Alliance precision via Frankfurt & Munich" },
-        { label: "Qatar Airways", href: "/airlines/qatar-airways", desc: "Five-star service via Hamad International" },
-        { label: "Delta Air Lines", href: "/airlines/delta-air-lines", desc: "SkyTeam on-time domestic & international travel" },
-        { label: "United Airlines", href: "/airlines/united-airlines", desc: "Dense transpacific and continental US connectivity" },
-        { label: "View All Partner Airlines →", href: "/airlines", desc: "Browse all 450+ contracted global commercial carriers" }
+        { label: "British Airways", href: "/airlines/british-airways",  },
+        { label: "Emirates", href: "/airlines/emirates", },
+        { label: "Lufthansa", href: "/airlines/lufthansa",  },
+        { label: "Qatar Airways", href: "/airlines/qatar-airways", },
+        { label: "Delta Air Lines", href: "/airlines/delta-air-lines", },
+        { label: "United Airlines", href: "/airlines/united-airlines",  },
+        { label: "View All Partner Airlines →", href: "/airlines",  }
       ]
     },
     {
       label: "About Us",
       href: "/contact",
       children: [
-        { label: "About Company", href: "/contact", desc: "Our 24/7 aviation desk and contracting authority" },
-        { label: "Contact Us", href: "/contact", desc: "Speak directly with a senior group air broker" },
-        { label: "Industry Blog & Guides", href: "/blog", desc: "Aviation contract insights, tariffs & booking advice" }
+        { label: "About Company", href: "/contact",  },
+        { label: "Contact Us", href: "/contact",  },
+        { label: "Industry Blog & Guides", href: "/blog",  }
       ]
     }
   ],

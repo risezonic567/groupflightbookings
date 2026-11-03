@@ -1,11 +1,11 @@
 import Image from "next/image";
-import { ShieldCheck, CheckCircle2, Clock, Headphones } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Clock } from "lucide-react";
 import QuoteForm from "@/components/QuoteForm";
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden pt-16 sm:pt-20 lg:pt-24 pb-20 sm:pb-28 lg:pb-32 border-b border-neutral-900 bg-[#0A1628]">
-      {/* Background Image with Dark Navy-to-Black Gradient Overlay (60-75% to 90% opacity) */}
+    <section className="relative overflow-hidden min-h-screen min-h-[100svh] w-full flex items-center  pb-20 sm:pb-28 lg:pb-32 border-b border-neutral-900 bg-[#0A1628]">
+      {/* Background: Image (fallback) + Video on top */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/banner/BEACH.jpg.jpeg"
@@ -15,7 +15,22 @@ export default function HeroSection() {
           sizes="100vw"
           className="object-cover object-center"
         />
-        {/* Navy to deep black gradient overlay for high contrast readability */}
+
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="/banner/BEACH.jpg.jpeg"
+          aria-hidden="true"
+        >
+          <source src="/banner/hero.webm" type="video/webm" />
+          <source src="/banner/hero.mp4" type="video/mp4" />
+        </video>
+
+        {/* Navy to deep black gradient overlay for readability */}
         <div
           className="absolute inset-0 bg-gradient-to-b from-[#0A1628]/30 via-[#0A1628]/35 to-[#0A0A0A]/45"
           aria-hidden="true"
@@ -55,25 +70,23 @@ export default function HeroSection() {
       </div>
 
       {/* Main Hero Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* Centered Heading Block */}
         <div className="text-center max-w-4xl mx-auto mb-10 sm:mb-14 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-sm">
+          {/* <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-sm">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="tracking-wide uppercase text-[11px] sm:text-xs">
-              Commercial Airline Group Allocations (10+ Passengers)
-            </span>
-          </div>
+          
+          </div> */}
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] text-balance">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-[1.1] text-balance">
             Your Global Group Travel Specialists
           </h1>
 
-          <p className="text-lg sm:text-2xl font-semibold text-blue-200/95 text-balance">
+          <p className="text-lg sm:text-2xl font-semibold text-blue-300/95 text-balance">
             Exclusively Group Travel. Expertly Done.
           </p>
 
-          <p className="text-sm sm:text-base lg:text-lg text-neutral-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm text-white sm:text-base lg:text-lg text-neutral-300 max-w-2xl mx-auto leading-relaxed">
             You bring the travellers. We&apos;ll bring the strategy, structure, and savings.
           </p>
         </div>

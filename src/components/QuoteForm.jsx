@@ -1,192 +1,120 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   Loader2,
   ArrowRight,
-  ArrowLeft,
   ArrowLeftRight,
   CheckCircle2,
   ShieldCheck,
   Calendar,
-  Users,
   Plus,
   Minus,
   X,
-  Plane,
-  Briefcase,
-  ChevronDown,
-  Check
+  Mail,
+  Phone
 } from "lucide-react";
 import AirportInput from "@/components/AirportInput";
 import { submitQuote } from "@/lib/api";
 
-/**
- * All form fields managed in ONE single constant array.
- * Adding, removing, or re-ordering any field is a simple one-line modification.
- */
 export const FORM_FIELDS = [
-  // Step 1: Trip Itinerary Fields
-  {
-    name: "origin",
-    label: "Origin",
-    type: "airport",
-    placeholder: "City or airport",
-    required: true,
-    step: 1
-  },
-  {
-    name: "destination",
-    label: "Destination",
-    type: "airport",
-    placeholder: "City or airport",
-    required: true,
-    step: 1
-  },
-  {
-    name: "departureDate",
-    label: "Departure Date",
-    type: "date",
-    placeholder: "Depart date",
-    required: true,
-    step: 1
-  },
-  {
-    name: "returnDate",
-    label: "Return Date",
-    type: "date",
-    placeholder: "Return date",
-    required: true,
-    step: 1
-  },
-  {
-    name: "travellers",
-    label: "Passengers",
-    type: "number",
-    placeholder: "1",
-    min: 1,
-    required: true,
-    step: 1
-  },
-  {
-    name: "flightClass",
-    label: "Class",
-    type: "select",
-    options: ["Economy", "Premium Economy", "Business", "First"],
-    required: false,
-    step: 1
-  },
-  {
-    name: "directPreferred",
-    label: "Direct flights",
-    type: "checkbox",
-    required: false,
-    step: 1
-  },
-
-  // Step 2: Contact Details Fields
-  {
-    name: "fullName",
-    label: "Full Name",
-    type: "text",
-    placeholder: "e.g. Sarah Jenkins",
-    required: true,
-    step: 2
-  },
-  {
-    name: "email",
-    label: "Work / Primary Email",
-    type: "email",
-    placeholder: "e.g. sarah@company.com",
-    required: true,
-    step: 2
-  },
-  {
-    name: "phone",
-    label: "Phone Number",
-    type: "tel",
-    placeholder: "e.g. +1 (555) 234-5678",
-    required: true,
-    step: 2
-  },
-  {
-    name: "notes",
-    label: "Special Requests / Group Notes",
-    type: "textarea",
-    placeholder: "Baggage pooling, multi-city departures, flight flexibility...",
-    required: false,
-    step: 2
-  }
+  { name: "origin", label: "Origin", type: "airport", required: true },
+  { name: "destination", label: "Destination", type: "airport", required: true },
+  { name: "departureDate", label: "Departure Date", type: "date", required: true },
+  { name: "returnDate", label: "Return Date", type: "date", required: true },
+  { name: "travellers", label: "Passengers", type: "number", required: true },
+  { name: "email", label: "Email", type: "email", required: true },
+  { name: "phone", label: "Phone Number", type: "tel", required: true }
 ];
 
+const TRIP_TYPES = [
+  { value: "oneway", label: "One Way" },
+  { value: "roundtrip", label: "Round Trip" },
+  { value: "multicity", label: "Multi City" }
+];
+
+const MAX_LEGS = 5;
+const emptyLeg = () => ({ origin: "", destination: "", date: "" });
+
+/* "YYYY-MM-DD" string <-> Date object (component ke bahar, taaki pehle define ho) */
+const toDate = (str) => (str ? new Date(str + "T00:00:00") : null);
+const toStr = (d) => {
+  if (!d) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+/* Small helper: label + input + error */
+function Field({ label, htmlFor, required, error, labelCls, children, className = "" }) {
+  return (
+    <div className={className}>
+      <label
+        htmlFor={htmlFor}
+        className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${labelCls}`}
+      >
+        {label} {required && <span className="text-primary">*</span>}
+      </label>
+      {children}
+      {error && (
+        <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function QuoteForm({
-  variant = "card", // "bar" for hero horizontal search bar, "card" for inner pages
+  variant = "card", // "bar" = hero (dark), "card" = inner pages (white)
   title = "Get a Guaranteed Group Flight Quote",
   subtitle = "Exclusive group flight solutions for your next journey.",
   airlineContext = "",
   className = ""
 }) {
   const router = useRouter();
+  const isBar = variant === "bar";
 
+  const [tripType, setTripType] = useState("roundtrip");
   const [formData, setFormData] = useState({
     origin: "",
     destination: "",
     departureDate: "",
     returnDate: "",
     travellers: 1,
-    flightClass: "Economy",
-    directPreferred: false,
-    fullName: "",
     email: "",
-    phone: "",
-    notes: "",
-    airlineContext: airlineContext
+    phone: ""
   });
-
+  const [legs, setLegs] = useState([emptyLeg(), emptyLeg()]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const modalRef = useRef(null);
 
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isModalOpen]);
+  const today = toStr(new Date());
 
-  // Handle ESC key to close modal
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === "Escape" && isModalOpen) {
-        setIsModalOpen(false);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isModalOpen]);
+  /* ---------- Styles (variant ke hisaab se) ---------- */
+  const labelCls = isBar ? "text-neutral-300" : "text-neutral-700";
+  const inputCls =
+    "w-full h-12 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200";
+  const airportCls =
+    "h-12 rounded-xl !border-neutral-300 !bg-white text-slate-900 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary";
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+  /* ---------- Handlers ---------- */
+  const clearError = (key) => {
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: "" }));
     if (serverError) setServerError("");
   };
 
-  // Swap Origin and Destination
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    clearError(name);
+  };
+
   const handleSwapAirports = () => {
     setFormData((prev) => ({
       ...prev,
@@ -195,119 +123,143 @@ export default function QuoteForm({
     }));
   };
 
-  // Passenger Count +/- Steppers
   const handlePassengerChange = (delta) => {
-    setFormData((prev) => {
-      const current = parseInt(prev.travellers, 10) || 1;
-      const nextVal = Math.max(1, current + delta);
-      return { ...prev, travellers: nextVal };
-    });
-    if (errors.travellers) {
-      setErrors((prev) => ({ ...prev, travellers: "" }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      travellers: Math.max(1, (Number(prev.travellers) || 1) + delta)
+    }));
+    clearError("travellers");
   };
 
-  // Validate Step 1 (Flight criteria)
-  const validateStep1 = () => {
-    const newErrors = {};
-
-    if (!formData.origin.trim()) {
-      newErrors.origin = "Origin airport/city is required.";
-    }
-
-    if (!formData.destination.trim()) {
-      newErrors.destination = "Destination airport/city is required.";
-    }
-
-    if (!formData.departureDate) {
-      newErrors.departureDate = "Departure date is required.";
-    }
-
-    if (!formData.returnDate) {
-      newErrors.returnDate = "Return date is required.";
-    } else if (formData.departureDate && new Date(formData.returnDate) < new Date(formData.departureDate)) {
-      newErrors.returnDate = "Return date cannot be earlier than departure.";
-    }
-
-    const travellersCount = parseInt(formData.travellers, 10);
-    if (!formData.travellers || isNaN(travellersCount) || travellersCount < 1) {
-      newErrors.travellers = "Please enter at least 1 passenger.";
-    }
-
-    return newErrors;
+  const handleTripTypeChange = (type) => {
+    setTripType(type);
+    setErrors({});
+    setServerError("");
   };
 
-  // Validate Step 2 (Contact details)
-  const validateStep2 = () => {
-    const newErrors = {};
+  const handleLegChange = (index, field, value) => {
+    setLegs((prev) => prev.map((leg, i) => (i === index ? { ...leg, [field]: value } : leg)));
+    clearError(`leg-${index}-${field}`);
+  };
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required.";
+  const addLeg = () => {
+    if (legs.length >= MAX_LEGS) return;
+    setLegs((prev) => [...prev, emptyLeg()]);
+  };
+
+  const removeLeg = (index) => {
+    if (legs.length <= 2) return;
+    setLegs((prev) => prev.filter((_, i) => i !== index));
+    setErrors({});
+  };
+
+  /* ---------- Validation ---------- */
+  const validate = () => {
+    const e = {};
+
+    if (tripType === "multicity") {
+      legs.forEach((leg, i) => {
+        if (!leg.origin.trim()) e[`leg-${i}-origin`] = "Required.";
+        if (!leg.destination.trim()) e[`leg-${i}-destination`] = "Required.";
+        if (!leg.date) {
+          e[`leg-${i}-date`] = "Required.";
+        } else if (i > 0 && legs[i - 1].date && new Date(leg.date) < new Date(legs[i - 1].date)) {
+          e[`leg-${i}-date`] = "Cannot be before previous flight.";
+        }
+      });
+    } else {
+      if (!formData.origin.trim()) e.origin = "Origin is required.";
+      if (!formData.destination.trim()) e.destination = "Destination is required.";
+      if (!formData.departureDate) e.departureDate = "Departure date is required.";
+
+      if (tripType === "roundtrip") {
+        if (!formData.returnDate) {
+          e.returnDate = "Return date is required.";
+        } else if (
+          formData.departureDate &&
+          new Date(formData.returnDate) < new Date(formData.departureDate)
+        ) {
+          e.returnDate = "Return cannot be before departure.";
+        }
+      }
+    }
+
+    const pax = parseInt(formData.travellers, 10);
+    if (!formData.travellers || isNaN(pax) || pax < 1) {
+      e.travellers = "Enter at least 1 passenger.";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required.";
+      e.email = "Email is required.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = "Please enter a valid email.";
+      e.email = "Enter a valid email.";
     }
 
+    const phoneDigits = formData.phone.replace(/\D/g, "");
     if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required.";
+      e.phone = "Phone number is required.";
+    } else if (
+      !/^[0-9+\-()\s]+$/.test(formData.phone) ||
+      phoneDigits.length < 7 ||
+      phoneDigits.length > 15
+    ) {
+      e.phone = "Enter a valid phone number.";
     }
 
-    return newErrors;
+    return e;
   };
 
-  // Handle clicking "Next" in Bar Variant
-  const handleNextStep = (e) => {
+  /* ---------- Submit ---------- */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const step1Errors = validateStep1();
-    if (Object.keys(step1Errors).length > 0) {
-      setErrors(step1Errors);
-      return;
-    }
-    setErrors({});
-    setIsModalOpen(true);
-  };
-
-  // Final submission of all fields
-  const handleFinalSubmit = async (e) => {
-    e.preventDefault();
-
     if (isSubmitting) return;
 
-    // Validate both steps
-    const step1Errors = validateStep1();
-    const step2Errors = validateStep2();
-    const allErrors = { ...step1Errors, ...step2Errors };
-
-    if (Object.keys(allErrors).length > 0) {
-      setErrors(allErrors);
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
     setIsSubmitting(true);
     setServerError("");
 
-    const payload = {
-      ...formData,
+    const base = {
+      tripType,
       travellers: parseInt(formData.travellers, 10),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      airlineContext,
       submittedAt: new Date().toISOString()
     };
 
-    const res = await submitQuote(payload);
+    let payload;
+    if (tripType === "multicity") {
+      payload = {
+        ...base,
+        legs,
+        origin: legs[0].origin,
+        destination: legs[legs.length - 1].destination,
+        departureDate: legs[0].date
+      };
+    } else {
+      payload = {
+        ...base,
+        origin: formData.origin,
+        destination: formData.destination,
+        departureDate: formData.departureDate,
+        returnDate: tripType === "roundtrip" ? formData.returnDate : ""
+      };
+    }
 
+    const res = await submitQuote(payload);
     setIsSubmitting(false);
 
     if (res && res.success) {
-      if (typeof window !== "undefined") {
-        try {
-          sessionStorage.setItem("lastGroupQuote", JSON.stringify(payload));
-        } catch (err) {
-          console.error("sessionStorage error:", err);
-        }
+      try {
+        sessionStorage.setItem("lastGroupQuote", JSON.stringify(payload));
+      } catch (err) {
+        console.error("sessionStorage error:", err);
       }
-      setIsModalOpen(false);
       router.push("/quote-confirmation");
     } else {
       setServerError(
@@ -316,743 +268,414 @@ export default function QuoteForm({
     }
   };
 
-  if (variant === "bar") {
+  /* ---------- Reusable UI pieces ---------- */
+  const tabs = (
+    <div className="flex flex-wrap gap-2 mb-5" role="tablist" aria-label="Trip type">
+      {TRIP_TYPES.map((t) => {
+        const active = tripType === t.value;
+        return (
+          <button
+            key={t.value}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => handleTripTypeChange(t.value)}
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              active
+                ? "bg-primary text-white shadow-md"
+                : isBar
+                ? "bg-white/10 text-neutral-300 hover:bg-white/20 hover:text-white border border-white/10"
+                : "bg-soft text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  /* Custom calendar (react-datepicker) */
+  const dateInput = ({ id, name, value, onChange, min }) => (
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+        <Calendar className="w-4 h-4 text-primary" />
+      </div>
+      <DatePicker
+        id={id}
+        selected={toDate(value)}
+        onChange={(d) => onChange({ target: { name, value: toStr(d) } })}
+        minDate={min ? toDate(min) : null}
+        placeholderText="Select date"
+        dateFormat="dd MMM yyyy"
+        autoComplete="off"
+        wrapperClassName="w-full"
+        popperPlacement="bottom-start"
+        className={`${inputCls} pl-10 pr-3 cursor-pointer placeholder:text-neutral-400`}
+      />
+    </div>
+  );
+
+  const passengersField = (
+    <Field
+      label="Passengers"
+      htmlFor="qf-travellers"
+      required
+      error={errors.travellers}
+      labelCls={labelCls}
+    >
+      <div className="flex items-center justify-between bg-white rounded-xl border border-neutral-300 h-12 px-1.5 shadow-sm text-slate-900">
+        <button
+          type="button"
+          onClick={() => handlePassengerChange(-1)}
+          disabled={Number(formData.travellers) <= 1}
+          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white disabled:opacity-30 disabled:cursor-not-allowed text-slate-700 flex items-center justify-center transition-colors shrink-0"
+          aria-label="Decrease passenger count"
+        >
+          <Minus className="w-3.5 h-3.5" />
+        </button>
+        <div className="flex flex-col items-center justify-center flex-1 px-1">
+          <input
+            type="number"
+            id="qf-travellers"
+            name="travellers"
+            min="1"
+            value={formData.travellers}
+            onChange={handleChange}
+            className="w-full text-center font-black text-sm text-slate-900 bg-transparent focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            aria-label="Passenger count"
+          />
+          <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-bold leading-none">
+            Guests
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => handlePassengerChange(1)}
+          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-700 flex items-center justify-center transition-colors shrink-0 cursor-pointer active:scale-95"
+          aria-label="Increase passenger count"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </Field>
+  );
+
+  const emailField = (
+    <Field label="Email" htmlFor="qf-email" required error={errors.email} labelCls={labelCls}>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+          <Mail className="w-4 h-4 text-primary" />
+        </div>
+        <input
+          type="email"
+          id="qf-email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="you@company.com"
+          autoComplete="email"
+          className={`${inputCls} pl-10 pr-3 placeholder:text-neutral-400`}
+        />
+      </div>
+    </Field>
+  );
+
+  const phoneField = (
+    <Field label="Phone Number" htmlFor="qf-phone" required error={errors.phone} labelCls={labelCls}>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+          <Phone className="w-4 h-4 text-primary" />
+        </div>
+        <input
+          type="tel"
+          id="qf-phone"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="+1 555 234 5678"
+          autoComplete="tel"
+          className={`${inputCls} pl-10 pr-3 placeholder:text-neutral-400`}
+        />
+      </div>
+    </Field>
+  );
+
+  const submitButton = (
+    <div className="flex flex-col justify-end">
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark disabled:bg-neutral-400 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-wider shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 group"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Sending...</span>
+          </>
+        ) : (
+          <>
+            <span>Get Group Quote</span>
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </>
+        )}
+      </button>
+    </div>
+  );
+
+  /* ---------- Itinerary section (trip type ke hisaab se) ---------- */
+  const itinerary =
+    tripType === "multicity" ? (
+      <div className="space-y-3">
+        {legs.map((leg, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-3.5 items-end"
+          >
+            <Field
+              label={`Flight ${i + 1} · From`}
+              htmlFor={`qf-leg-${i}-origin`}
+              required
+              error={errors[`leg-${i}-origin`]}
+              labelCls={labelCls}
+            >
+              <AirportInput
+                id={`qf-leg-${i}-origin`}
+                name={`leg-${i}-origin`}
+                value={leg.origin}
+                onChange={(e) => handleLegChange(i, "origin", e.target.value)}
+                placeholder="City or airport"
+                className={airportCls}
+              />
+            </Field>
+
+            <Field
+              label="To"
+              htmlFor={`qf-leg-${i}-destination`}
+              required
+              error={errors[`leg-${i}-destination`]}
+              labelCls={labelCls}
+            >
+              <AirportInput
+                id={`qf-leg-${i}-destination`}
+                name={`leg-${i}-destination`}
+                value={leg.destination}
+                onChange={(e) => handleLegChange(i, "destination", e.target.value)}
+                placeholder="City or airport"
+                className={airportCls}
+              />
+            </Field>
+
+            <Field
+              label="Date"
+              htmlFor={`qf-leg-${i}-date`}
+              required
+              error={errors[`leg-${i}-date`]}
+              labelCls={labelCls}
+            >
+              {dateInput({
+                id: `qf-leg-${i}-date`,
+                name: `leg-${i}-date`,
+                value: leg.date,
+                min: (i > 0 && legs[i - 1].date) || today,
+                onChange: (e) => handleLegChange(i, "date", e.target.value)
+              })}
+            </Field>
+
+            <div className="h-12 flex items-center">
+              {legs.length > 2 ? (
+                <button
+                  type="button"
+                  onClick={() => removeLeg(i)}
+                  aria-label={`Remove flight ${i + 1}`}
+                  className="w-10 h-10 rounded-full bg-slate-900/80 hover:bg-primary border border-white/20 text-neutral-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className="w-10 h-10" aria-hidden="true" />
+              )}
+            </div>
+          </div>
+        ))}
+
+        {legs.length < MAX_LEGS && (
+          <button
+            type="button"
+            onClick={addLeg}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/15 hover:bg-primary text-primary hover:text-white border border-primary/40 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add another flight</span>
+          </button>
+        )}
+      </div>
+    ) : (
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end ${
+          tripType === "roundtrip" ? "lg:grid-cols-5" : "lg:grid-cols-4"
+        }`}
+      >
+        {/* Origin + swap */}
+        <div className="relative">
+          <Field
+            label="Origin"
+            htmlFor="qf-origin"
+            required
+            error={errors.origin}
+            labelCls={labelCls}
+          >
+            <AirportInput
+              id="qf-origin"
+              name="origin"
+              value={formData.origin}
+              onChange={handleChange}
+              placeholder="City or airport"
+              className={airportCls}
+            />
+          </Field>
+          <button
+            type="button"
+            onClick={handleSwapAirports}
+            title="Swap Origin and Destination"
+            aria-label="Swap airports"
+            className="hidden lg:flex absolute -right-3.5 top-[39px] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-slate-900 hover:bg-primary border border-white/20 text-neutral-300 hover:text-white items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+          >
+            <ArrowLeftRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
+          </button>
+        </div>
+
+        <Field
+          label="Destination"
+          htmlFor="qf-destination"
+          required
+          error={errors.destination}
+          labelCls={labelCls}
+        >
+          <AirportInput
+            id="qf-destination"
+            name="destination"
+            value={formData.destination}
+            onChange={handleChange}
+            placeholder="City or airport"
+            className={airportCls}
+          />
+        </Field>
+
+        <Field
+          label="Departure"
+          htmlFor="qf-departureDate"
+          required
+          error={errors.departureDate}
+          labelCls={labelCls}
+        >
+          {dateInput({
+            id: "qf-departureDate",
+            name: "departureDate",
+            value: formData.departureDate,
+            min: today,
+            onChange: handleChange
+          })}
+        </Field>
+
+        {tripType === "roundtrip" && (
+          <Field
+            label="Return"
+            htmlFor="qf-returnDate"
+            required
+            error={errors.returnDate}
+            labelCls={labelCls}
+          >
+            {dateInput({
+              id: "qf-returnDate",
+              name: "returnDate",
+              value: formData.returnDate,
+              min: formData.departureDate || today,
+              onChange: handleChange
+            })}
+          </Field>
+        )}
+
+        {passengersField}
+      </div>
+    );
+
+  /* ---------- Contact row ---------- */
+  const contactRow =
+    tripType === "multicity" ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-end">
+        {passengersField}
+        {emailField}
+        {phoneField}
+        {submitButton}
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 items-end">
+        {emailField}
+        {phoneField}
+        {submitButton}
+      </div>
+    );
+
+  const form = (
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      {tabs}
+      {itinerary}
+      {contactRow}
+
+      {serverError && (
+        <div className="p-3 rounded-xl bg-neutral-900 border border-primary text-white text-xs font-medium">
+          {serverError}
+        </div>
+      )}
+
+      <div
+        className={`flex flex-wrap items-center gap-x-5 gap-y-2 pt-4 mt-2 border-t text-xs font-semibold ${
+          isBar ? "border-white/10 text-white" : "border-neutral-200 text-neutral-700"
+        }`}
+      >
+        <span className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Minimum 10 travellers
+        </span>
+        <span className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Free name changes
+        </span>
+        <span className="flex items-center gap-1.5">
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> 24/7 Air Desk Support
+        </span>
+      </div>
+    </form>
+  );
+
+  /* ---------- VARIANT A: bar (hero) ---------- */
+  if (isBar) {
     return (
       <div id="quote" className={`w-full max-w-7xl mx-auto ${className}`}>
         <div className="relative bg-[#0F172A]/95 backdrop-blur-xl text-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 lg:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border border-white/10 ring-1 ring-white/5">
-          {/* Top Subtle Royal Blue Accent Glow Line */}
           <div
             className="absolute top-0 left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-primary/80 to-transparent"
             aria-hidden="true"
           />
-
-          {/* Header Title Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 mb-5 border-b border-white/10 gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shadow-xs shrink-0">
-                <Plane className="w-5 h-5 rotate-45 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Search Group Flights
-                  </h3>
-                  <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold uppercase tracking-wider text-primary">
-                    10+ Travellers
-                  </span>
-                </div>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Contracted offline airline desk tariffs with guaranteed locked fares
-                </p>
-              </div>
-            </div>
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-neutral-300 self-start sm:self-auto shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              <span>Direct Group Tariff Guarantee</span>
-            </div>
-          </div>
-
-          {/* Step 1 Bar Form */}
-          <form onSubmit={handleNextStep} noValidate className="space-y-4">
-            {/* Grid of Fields: Horizontal 7-column layout on Desktop, 4-col on Laptop/Tablet, 2-col on Small Tablet, 1-col on Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3.5 items-end">
-              {/* 1. Origin */}
-              <div className="relative">
-                <label
-                  htmlFor="hero-origin"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Origin <span className="text-primary">*</span>
-                </label>
-                <AirportInput
-                  id="hero-origin"
-                  name="origin"
-                  value={formData.origin}
-                  onChange={handleChange}
-                  placeholder="City or airport"
-                  required
-                  className="h-12 rounded-xl !border-neutral-300 !bg-white text-slate-900 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary"
-                />
-                {/* Desktop Floating Swap Button between Origin & Destination */}
-                <button
-                  type="button"
-                  onClick={handleSwapAirports}
-                  title="Swap Origin and Destination"
-                  aria-label="Swap airports"
-                  className="hidden xl:flex absolute -right-3.5 top-[39px] -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-slate-900 hover:bg-primary border border-white/20 text-neutral-300 hover:text-white items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
-                >
-                  <ArrowLeftRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" />
-                </button>
-                {errors.origin && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
-                    {errors.origin}
-                  </p>
-                )}
-              </div>
-
-              {/* Mobile/Tablet Inline Swap Button (visible only when stacked/2-col) */}
-              <div className="flex xl:hidden justify-center -my-1 sm:col-span-2 lg:col-span-4 z-10">
-                <button
-                  type="button"
-                  onClick={handleSwapAirports}
-                  title="Swap Origin and Destination"
-                  aria-label="Swap airports"
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 hover:bg-primary border border-white/20 text-xs font-semibold text-neutral-300 hover:text-white shadow transition-all duration-200 cursor-pointer active:scale-95"
-                >
-                  <ArrowLeftRight className="w-3.5 h-3.5" />
-                  <span>Swap Airports</span>
-                </button>
-              </div>
-
-              {/* 2. Destination */}
-              <div>
-                <label
-                  htmlFor="hero-destination"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Destination <span className="text-primary">*</span>
-                </label>
-                <AirportInput
-                  id="hero-destination"
-                  name="destination"
-                  value={formData.destination}
-                  onChange={handleChange}
-                  placeholder="City or airport"
-                  required
-                  className="h-12 rounded-xl !border-neutral-300 !bg-white text-slate-900 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary"
-                />
-                {errors.destination && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
-                    {errors.destination}
-                  </p>
-                )}
-              </div>
-
-              {/* 3. Departure Date */}
-              <div>
-                <label
-                  htmlFor="hero-departureDate"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Departure <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
-                    <Calendar className="w-4 h-4 text-primary" />
-                  </div>
-                  <input
-                    type="date"
-                    id="hero-departureDate"
-                    name="departureDate"
-                    value={formData.departureDate}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 pl-10 pr-3 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer"
-                  />
-                </div>
-                {errors.departureDate && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
-                    {errors.departureDate}
-                  </p>
-                )}
-              </div>
-
-              {/* 4. Return Date */}
-              <div>
-                <label
-                  htmlFor="hero-returnDate"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Return <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
-                    <Calendar className="w-4 h-4 text-primary" />
-                  </div>
-                  <input
-                    type="date"
-                    id="hero-returnDate"
-                    name="returnDate"
-                    min={formData.departureDate || undefined}
-                    value={formData.returnDate}
-                    onChange={handleChange}
-                    required
-                    className="w-full h-12 pl-10 pr-3 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer"
-                  />
-                </div>
-                {errors.returnDate && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
-                    {errors.returnDate}
-                  </p>
-                )}
-              </div>
-
-              {/* 5. Passengers with Attractive +/- Steppers */}
-              <div>
-                <label
-                  htmlFor="hero-travellers"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Passengers <span className="text-primary">*</span>
-                </label>
-                <div className="relative flex items-center justify-between bg-white rounded-xl border border-neutral-300 h-12 px-1.5 shadow-sm text-slate-900">
-                  <button
-                    type="button"
-                    onClick={() => handlePassengerChange(-1)}
-                    disabled={parseInt(formData.travellers, 10) <= 10}
-                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white disabled:opacity-30 disabled:hover:bg-slate-100 disabled:hover:text-slate-700 text-slate-700 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer active:scale-95"
-                    aria-label="Decrease passenger count"
-                  >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <div className="flex flex-col items-center justify-center flex-1 px-1">
-                    <input
-                      type="number"
-                      id="hero-travellers"
-                      name="travellers"
-                      min="10"
-                      value={formData.travellers}
-                      onChange={handleChange}
-                      className="w-full text-center font-black text-sm text-slate-900 bg-transparent focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      aria-label="Passenger count"
-                    />
-                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-bold leading-none">Guests</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handlePassengerChange(1)}
-                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-700 flex items-center justify-center font-bold text-xs transition-colors shrink-0 cursor-pointer active:scale-95"
-                    aria-label="Increase passenger count"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                {errors.travellers && (
-                  <p className="mt-1 text-[11px] font-semibold text-white bg-neutral-900 border border-primary px-2 py-0.5 rounded-md inline-block">
-                    {errors.travellers}
-                  </p>
-                )}
-              </div>
-
-              {/* 6. Travel Class Dropdown */}
-              <div>
-                <label
-                  htmlFor="hero-flightClass"
-                  className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
-                >
-                  Cabin Class
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary z-10">
-                    <Briefcase className="w-4 h-4 text-primary" />
-                  </div>
-                  <select
-                    id="hero-flightClass"
-                    name="flightClass"
-                    value={formData.flightClass}
-                    onChange={handleChange}
-                    className="w-full h-12 pl-10 pr-8 text-sm font-medium bg-white border border-neutral-300 rounded-xl text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 cursor-pointer appearance-none"
-                  >
-                    <option value="Economy">Economy</option>
-                    <option value="Premium Economy">Prem. Economy</option>
-                    <option value="Business">Business Class</option>
-                    <option value="First">First Class</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-neutral-400">
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-
-              {/* 7. Next Button */}
-              <div className="sm:col-span-2 lg:col-span-4 xl:col-span-1 flex flex-col justify-end">
-                <button
-                  type="submit"
-                  className="w-full h-12 rounded-xl bg-primary hover:bg-primary-dark text-white font-black text-sm uppercase tracking-wider shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900 group"
-                >
-                  <span>Next</span>
-                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-                </button>
-              </div>
-            </div>
-
-            {/* Bottom Row: Direct Flights Checkbox + Trust Highlights */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 mt-2 border-t border-white/10 gap-3 text-xs text-neutral-300">
-              <label className="flex items-center gap-2.5 cursor-pointer select-none group py-1">
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    name="directPreferred"
-                    checked={formData.directPreferred}
-                    onChange={handleChange}
-                    className="peer sr-only"
-                  />
-                  <div className="w-4 h-4 rounded border border-white/30 bg-white/10 peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity stroke-[3]" />
-                  </div>
-                </div>
-                <span className="text-neutral-300 group-hover:text-white transition-colors font-medium">
-                  Direct flights preferred (non-stop only)
-                </span>
-              </label>
-
-              <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-neutral-300">
-                <span className="flex items-center gap-1.5 text-white">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Minimum 10 travellers
-                </span>
-                <span className="hidden sm:inline text-neutral-600">•</span>
-                <span className="flex items-center gap-1.5 text-white">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Free name changes
-                </span>
-                <span className="hidden sm:inline text-neutral-600">•</span>
-                <span className="flex items-center gap-1.5 text-white">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> 24/7 Air Desk Support
-                </span>
-              </div>
-            </div>
-          </form>
+          {form}
         </div>
-
-        {/* STEP 2 MODAL DIALOG */}
-        {isModalOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-          >
-            <div
-              ref={modalRef}
-              className="relative w-full max-w-xl bg-white text-ink rounded-3xl p-6 sm:p-8 shadow-2xl border border-neutral-200 animate-slideUp"
-            >
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-5 right-5 p-2 rounded-full text-neutral-400 hover:text-ink hover:bg-soft transition-colors cursor-pointer"
-                aria-label="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Modal Header */}
-              <div className="mb-5 pr-8">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft border border-neutral-200 text-xs font-semibold text-primary mb-2">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Step 2 of 2: Contract Contact Details</span>
-                </div>
-                <h3 id="modal-title" className="text-2xl font-extrabold text-ink">
-                  Where Should We Send Your Group Quote?
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-500 mt-1">
-                  Our airline group specialists will calculate block allocations and dispatch your rate proposal.
-                </p>
-              </div>
-
-              {/* Trip Summary Badge Line */}
-              <div className="bg-soft p-3.5 rounded-2xl border border-neutral-200 mb-5 flex items-center gap-2.5 text-xs font-medium text-neutral-700">
-                <Plane className="w-4 h-4 text-primary shrink-0 rotate-45" />
-                <span className="line-clamp-1">
-                  <strong>{formData.origin}</strong> &rarr; <strong>{formData.destination}</strong> • {formData.departureDate} to {formData.returnDate} • <strong>{formData.travellers} Pax</strong> • {formData.flightClass}
-                </span>
-              </div>
-
-              {serverError && (
-                <div className="mb-4 p-3 rounded-xl bg-soft border border-ink text-ink text-xs font-medium">
-                  {serverError}
-                </div>
-              )}
-
-              {/* Step 2 Form */}
-              <form onSubmit={handleFinalSubmit} noValidate className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Full Name */}
-                  <div className="sm:col-span-2">
-                    <label
-                      htmlFor="modal-fullName"
-                      className="block text-xs font-semibold text-neutral-700 mb-1"
-                    >
-                      Full Name <span className="text-primary">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="modal-fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      placeholder="e.g. Sarah Jenkins"
-                      required
-                      className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                        errors.fullName ? "border-primary" : "border-neutral-300"
-                      }`}
-                    />
-                    {errors.fullName && (
-                      <p className="mt-1 text-xs text-primary font-semibold">{errors.fullName}</p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label
-                      htmlFor="modal-email"
-                      className="block text-xs font-semibold text-neutral-700 mb-1"
-                    >
-                      Work / Primary Email <span className="text-primary">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="modal-email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="sarah@company.com"
-                      required
-                      className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                        errors.email ? "border-primary" : "border-neutral-300"
-                      }`}
-                    />
-                    {errors.email && (
-                      <p className="mt-1 text-xs text-primary font-semibold">{errors.email}</p>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label
-                      htmlFor="modal-phone"
-                      className="block text-xs font-semibold text-neutral-700 mb-1"
-                    >
-                      Phone Number <span className="text-primary">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="modal-phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+1 (555) 234-5678"
-                      required
-                      className={`w-full px-3.5 py-2.5 text-sm bg-white border rounded-xl text-ink placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                        errors.phone ? "border-primary" : "border-neutral-300"
-                      }`}
-                    />
-                    {errors.phone && (
-                      <p className="mt-1 text-xs text-primary font-semibold">{errors.phone}</p>
-                    )}
-                  </div>
-
-                  {/* Notes */}
-                  <div className="sm:col-span-2">
-                    <label
-                      htmlFor="modal-notes"
-                      className="block text-xs font-semibold text-neutral-700 mb-1"
-                    >
-                      Special Requests / Notes <span className="text-neutral-400 font-normal">(Optional)</span>
-                    </label>
-                    <textarea
-                      id="modal-notes"
-                      name="notes"
-                      rows={2}
-                      value={formData.notes}
-                      onChange={handleChange}
-                      placeholder="Baggage pooling, multi-city departures, flight flexibility..."
-                      className="w-full px-3.5 py-2 text-sm bg-white border border-neutral-300 rounded-xl text-ink placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                    ></textarea>
-                  </div>
-                </div>
-
-                {/* Modal Actions */}
-                <div className="pt-3 flex items-center justify-between gap-3 border-t border-neutral-100">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-300 hover:bg-soft text-ink font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Back</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark disabled:bg-neutral-400 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Securing Group Rates...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Get Group Quote</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* VARIANT B: "card" (Used in Contact, Airlines Detail, and Home Section 6)   */
-  /* -------------------------------------------------------------------------- */
+  /* ---------- VARIANT B: card (inner pages) ---------- */
   return (
-    <div className={`bg-white rounded-3xl shadow-xl border border-neutral-200 p-6 sm:p-8 text-ink ${className}`}>
-      {/* Header */}
+    <div
+      className={`bg-white rounded-3xl shadow-xl border border-neutral-200 p-6 sm:p-8 text-ink ${className}`}
+    >
       <div className="mb-6">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-soft border border-neutral-200 text-xs font-semibold text-primary mb-2">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>Locked Price Guarantee</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">
-          {title}
-        </h2>
-        <p className="text-xs sm:text-sm text-neutral-500 mt-1">
-          {subtitle}
-        </p>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">{title}</h2>
+        <p className="text-xs sm:text-sm text-neutral-500 mt-1">{subtitle}</p>
       </div>
-
-      {serverError && (
-        <div className="mb-6 p-4 rounded-xl bg-soft border border-ink text-ink text-sm font-medium">
-          <p className="font-bold">Notice:</p>
-          <p>{serverError}</p>
-        </div>
-      )}
-
-      {/* Card Form */}
-      <form onSubmit={handleFinalSubmit} noValidate className="space-y-4">
-        <div className="grid grid-cols-12 gap-3 sm:gap-4">
-          {/* Origin */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-origin" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Origin <span className="text-primary">*</span>
-            </label>
-            <AirportInput
-              id="card-origin"
-              name="origin"
-              value={formData.origin}
-              onChange={handleChange}
-              placeholder="City or airport"
-              required
-              className={errors.origin ? "border-primary ring-1 ring-primary" : ""}
-            />
-            {errors.origin && <p className="mt-1 text-xs text-primary font-semibold">{errors.origin}</p>}
-          </div>
-
-          {/* Destination */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-destination" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Destination <span className="text-primary">*</span>
-            </label>
-            <AirportInput
-              id="card-destination"
-              name="destination"
-              value={formData.destination}
-              onChange={handleChange}
-              placeholder="City or airport"
-              required
-              className={errors.destination ? "border-primary ring-1 ring-primary" : ""}
-            />
-            {errors.destination && <p className="mt-1 text-xs text-primary font-semibold">{errors.destination}</p>}
-          </div>
-
-          {/* Departure Date */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-departureDate" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Departure Date <span className="text-primary">*</span>
-            </label>
-            <input
-              type="date"
-              id="card-departureDate"
-              name="departureDate"
-              value={formData.departureDate}
-              onChange={handleChange}
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.departureDate ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.departureDate && <p className="mt-1 text-xs text-primary font-semibold">{errors.departureDate}</p>}
-          </div>
-
-          {/* Return Date */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-returnDate" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Return Date <span className="text-primary">*</span>
-            </label>
-            <input
-              type="date"
-              id="card-returnDate"
-              name="returnDate"
-              min={formData.departureDate || undefined}
-              value={formData.returnDate}
-              onChange={handleChange}
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.returnDate ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.returnDate && <p className="mt-1 text-xs text-primary font-semibold">{errors.returnDate}</p>}
-          </div>
-
-          {/* Passengers */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-travellers" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Passengers <span className="text-primary">*</span>
-            </label>
-            <input
-              type="number"
-              id="card-travellers"
-              name="travellers"
-              min="1"
-              value={formData.travellers}
-              onChange={handleChange}
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.travellers ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.travellers && <p className="mt-1 text-xs text-primary font-semibold">{errors.travellers}</p>}
-          </div>
-
-          {/* Class */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-flightClass" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Class
-            </label>
-            <select
-              id="card-flightClass"
-              name="flightClass"
-              value={formData.flightClass}
-              onChange={handleChange}
-              className="w-full h-12 px-4 text-sm bg-white border border-neutral-300 rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
-            >
-              <option value="Economy">Economy</option>
-              <option value="Premium Economy">Premium Economy</option>
-              <option value="Business">Business</option>
-              <option value="First">First</option>
-            </select>
-          </div>
-
-          {/* Full Name */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-fullName" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Full Name <span className="text-primary">*</span>
-            </label>
-            <input
-              type="text"
-              id="card-fullName"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="e.g. Sarah Jenkins"
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.fullName ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.fullName && <p className="mt-1 text-xs text-primary font-semibold">{errors.fullName}</p>}
-          </div>
-
-          {/* Email */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-email" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Work / Primary Email <span className="text-primary">*</span>
-            </label>
-            <input
-              type="email"
-              id="card-email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="sarah@company.com"
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.email ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.email && <p className="mt-1 text-xs text-primary font-semibold">{errors.email}</p>}
-          </div>
-
-          {/* Phone */}
-          <div className="col-span-12 sm:col-span-6">
-            <label htmlFor="card-phone" className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
-              Phone Number <span className="text-primary">*</span>
-            </label>
-            <input
-              type="tel"
-              id="card-phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+1 (555) 234-5678"
-              required
-              className={`w-full h-12 px-4 text-sm bg-white border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.phone ? "border-primary ring-1 ring-primary" : "border-neutral-300"
-              }`}
-            />
-            {errors.phone && <p className="mt-1 text-xs text-primary font-semibold">{errors.phone}</p>}
-          </div>
-
-          {/* Direct Flights Checkbox */}
-          <div className="col-span-12 sm:col-span-6 flex items-center pt-5">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="directPreferred"
-                checked={formData.directPreferred}
-                onChange={handleChange}
-                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary cursor-pointer"
-              />
-              <span className="text-xs text-neutral-700 font-medium">
-                Direct flights preferred (non-stop)
-              </span>
-            </label>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark disabled:bg-neutral-400 text-white font-bold text-sm uppercase tracking-wider rounded-lg shadow-sm hover:shadow transition-all cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Checking Airline Allocations...</span>
-              </>
-            ) : (
-              <>
-                <span>Get Group Quote</span>
-                <ArrowRight className="w-5 h-5" />
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="pt-2 flex items-center justify-center gap-4 text-xs text-neutral-500">
-          <span className="flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> No obligation
-          </span>
-          <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
-          <span className="flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Free name changes
-          </span>
-          <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
-          <span className="flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> 24/7 Air Desk
-          </span>
-        </div>
-      </form>
+      {form}
     </div>
   );
 }
